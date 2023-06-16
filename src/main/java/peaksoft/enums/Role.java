@@ -1,10 +1,8 @@
 package peaksoft.enums;
 
-/**
- * name : kutman
- **/
+
 public enum Role {
-   ADMIN,
+    ADMIN,
     WAITER,
     CHEF
 }

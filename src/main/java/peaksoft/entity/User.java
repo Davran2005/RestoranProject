@@ -2,16 +2,13 @@ package peaksoft.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import peaksoft.enums.Role;
-
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,6 +18,7 @@ import java.util.List;
 @Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
@@ -28,7 +26,7 @@ public class User implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
-    private LocalDate dateOfBirth;
+    private ZonedDateTime dateOfBirth;
     @Email
     private String email;
     private String password;
@@ -37,10 +35,10 @@ public class User implements UserDetails {
     private Role role;
     private int experience;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST})
+    @ManyToOne(cascade = {CascadeType.MERGE,CascadeType.REFRESH,CascadeType.DETACH})
     private Restaurant restaurant;
 
-    public User(String firstName, String lastName, LocalDate dateOfBirth, String email, String password, String phoneNumber, Role role, int experience) {
+    public User(String firstName, String lastName, ZonedDateTime dateOfBirth, String email, String password, String phoneNumber, Role role, int experience) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;

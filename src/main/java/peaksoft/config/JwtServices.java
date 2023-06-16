@@ -1,74 +1,35 @@
 package peaksoft.config;
-
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
 
-/**
- * name : kutman
- **/
-@Service
+@Component
 public class JwtServices {
-    private static  final String SECRET_KEY = "77217A25432A462D4A404E635266556A586E3272357538782F413F4428472B4B";
-    public String extractUsername(String token) {
-        return extractClaim(token,Claims::getSubject);
+    @Value("${spring.jwt.secret_key}")
+    private String SECRET_KEY;
+
+    public String generateToken(UserDetails userDetails) {
+        return JWT.create()
+                .withClaim("username", userDetails.getUsername())
+                .withIssuedAt(new Date())
+                .withExpiresAt(Date.from(ZonedDateTime.now().plusMinutes(60).toInstant()))
+                .sign(Algorithm.HMAC256(SECRET_KEY));
     }
 
-    public <T> T extractClaim(String token, Function<Claims,T>claimResolver){
-        final Claims claims = extractAllClaims(token);
-        return claimResolver.apply(claims);
-    }
+    public String validateToken(String token) {
+        JWTVerifier jwtVerifier =
+                JWT.require(
+                                Algorithm.HMAC256(SECRET_KEY))
+                        .build();
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(),userDetails);
-    }
-    public  String generateToken(
-            Map<String,Object>extraClaim,
-            UserDetails userDetails
-            ){
-        return Jwts
-                .builder()
-                .setClaims(extraClaim).setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+10000*600*240 ))
-                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-    public boolean isTokenValid(String token,UserDetails userDetails){
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token,Claims::getExpiration);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return  Jwts
-                .parserBuilder()
-                .setSigningKey(getSignInKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+        DecodedJWT jwt = jwtVerifier.verify(token);
+        return jwt.getClaim("username").asString();
     }
 }

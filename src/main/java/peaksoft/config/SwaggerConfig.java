@@ -1,7 +1,7 @@
 package peaksoft.config;
 
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -19,7 +19,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes(API_KEY, apiKeySecuritySchema()))
-                .info(new Info().title("Gadgetarium"))
+                .info(new Info().title("Restoran"))
                 .security(Collections.singletonList(new SecurityRequirement().addList(API_KEY)));
     }
     public SecurityScheme apiKeySecuritySchema() {

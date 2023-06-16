@@ -1,5 +1,7 @@
 package peaksoft.config;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,51 +10,50 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import peaksoft.entity.User;
+import peaksoft.repository.UserRepository;
+
 
 import java.io.IOException;
 
-/**
- * name : kutman
- **/
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtServices jwtServices;
-    private final UserDetailsService userDetailsService;
+
+    private final JwtServices jwtService;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        jwt = authHeader.substring(7);
-        userEmail = jwtServices.extractUsername(jwt);
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null){
-            UserDetails userDetails = this. userDetailsService.loadUserByUsername(userEmail);
-            if(jwtServices.isTokenValid(jwt,userDetails)){
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+        String tokenHeader = request.getHeader("Authorization");
+        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
+            String token = tokenHeader.substring(7);
+            if (StringUtils.hasText(token)) {
+                try {
+                    String username = jwtService.validateToken(token);
+                    User user = userRepository.findByEmail(username)
+                            .orElseThrow(() ->
+                                    new EntityNotFoundException("user with email: " + username + " not found"));
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(
+                                    new UsernamePasswordAuthenticationToken(
+                                            user.getEmail(),
+                                            null,
+                                            user.getAuthorities()));
+
+                } catch (JWTVerificationException e) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                            "Invalid Token");
+                }
             }
+
         }
-        filterChain.doFilter(request,response);
     }
 }

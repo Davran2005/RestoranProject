@@ -7,10 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -25,24 +22,16 @@ public class Cheque {
     private Long id;
     private int priceAverage;
     private LocalDate createdAt;
-    private int total;
-    private int grandTotal;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
-    @JoinColumn(name = "user_id")
+    @ManyToOne(cascade = { CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     private User user;
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinTable(name = "cheques_menu_items",
-            joinColumns = @JoinColumn(name = "cheque_id"),
-            inverseJoinColumns = @JoinColumn(name = "menu_items_"))
-    private List<MenuItem> menuItems_id;
+    @ManyToMany(mappedBy = "cheques",cascade = {CascadeType.MERGE, CascadeType.REFRESH,CascadeType.DETACH})
+    private List<MenuItem> menuItems;
 
-    public Cheque(int priceAverage, LocalDate createdAt, int grandTotal, User user, List<MenuItem> menuItems_id) {
+    public Cheque(Long id, int priceAverage, LocalDate createdAt) {
+        this.id = id;
         this.priceAverage = priceAverage;
         this.createdAt = createdAt;
-        this.grandTotal = grandTotal;
-        this.user = user;
-        this.menuItems_id = menuItems_id;
     }
 }

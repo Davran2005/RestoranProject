@@ -1,7 +1,6 @@
 package peaksoft.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "stop_lists")
-@AllArgsConstructor
+
 @NoArgsConstructor
 public class StopList {
     @Id
@@ -21,7 +20,7 @@ public class StopList {
     private Long id;
     private String reason;
     private LocalDate date;
-    @OneToOne(cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
     private MenuItem menuItem;
 
     public StopList(String reason, LocalDate date) {

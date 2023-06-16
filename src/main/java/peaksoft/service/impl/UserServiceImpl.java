@@ -13,28 +13,32 @@ import peaksoft.dto.Authentication.AuthenticationResponse;
 import peaksoft.dto.Authentication.SignInRequest;
 import peaksoft.dto.Authentication.SignUpRequest;
 import peaksoft.dto.user.UserRequest;
+import peaksoft.dto.user.UserResponse;
 import peaksoft.entity.User;
 import peaksoft.enums.Role;
+import peaksoft.exception.BadRequestException;
+import peaksoft.exception.NotFoundException;
 import peaksoft.repository.UserRepository;
-import peaksoft.service.AuthenticationService;
+import peaksoft.service.UserService;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AuthenticationServiceImpl implements AuthenticationService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtServices jwtService;
+
     @Override
     public AuthenticationResponse signUp(SignUpRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new EntityExistsException("Email already exists");
         }
-        User user = new User();
 
         User user = User
                 .builder()
@@ -43,9 +47,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .dateOfBirth(ZonedDateTime.from(request.getDateOfBirth()))
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.phoneNumber())
-                .role(Role.ADMIN)
-                .experience(request.experience())
+                .phoneNumber(request.getPhoneNumber())
+                .role(Role.CHEF)
+                .experience(request.getExperience())
                 .build();
 
         userRepository.save(user);
@@ -80,6 +84,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
+    @Override
+    public UserResponse getUserById(Long id) {
+        return userRepository.findByIdUser(id).orElseThrow(()->new NotFoundException("User with id: " + id + "is not fount"));
+    }
+
+    @Override
+    public List<UserResponse> getAllUser() {
+        return null;
+    }
+
+    @Override
+    public String deleteUser(Long id) {
+        if(id!=1L) {
+            User user = userRepository.findById(id).orElseThrow(() ->
+                    new NotFoundException(String.format("Author with email :%s already exists", id)));
+            userRepository.deleteById(id);
+            return user.getEmail() + " is deleted!";
+        }else {
+            throw new BadRequestException("user by id 1L dont deleted");
+        }
+    }
+
+    @Override
+    public UserResponse updateUser(Long id, UserRequest userRequest) {
+        return null;
+    }
+
     @PostConstruct
     public void init() {
         UserRequest user = new UserRequest(
@@ -92,6 +123,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 Role.ADMIN,
                 2
         );
-        }
     }
-
+}

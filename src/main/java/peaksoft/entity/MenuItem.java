@@ -20,33 +20,19 @@ public class MenuItem {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "menu_item_seq")
     @SequenceGenerator(name = "menu_item_seq")
-    @Column(nullable = false)
     private Long id;
     private String name;
     private String image;
     private int price;
     private String description;
     private Boolean isVegetarian;
-
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
-    @JoinColumn(name = "restaurant_id")
+    private LocalDate isBlocked;
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     private Restaurant restaurant;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
-    private Subcategory subcategories;
-    @ManyToMany(mappedBy = "menuItems_id", cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @ManyToMany( cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     private List<Cheque> cheques = new ArrayList<>();
-
-    public MenuItem(String name, String image, int price, String description, Boolean isVegetarian) {
-        this.name = name;
-        this.image = image;
-        this.price = price;
-        this.description = description;
-        this.isVegetarian = isVegetarian;
-    }
-    private LocalDate isBlocked;
-
-    @OneToOne(mappedBy = "menuItem", orphanRemoval = true,cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "menuItem",cascade = {CascadeType.DETACH,CascadeType.REMOVE,CascadeType.REFRESH,CascadeType.MERGE})
     private StopList stopList;
 
 }
