@@ -10,12 +10,10 @@ import java.util.List;
 @Getter
 @Setter
 public class ChequeRequest{
-        private Long waiterId;
-        private List<String> menuName;
+       private int priceAverage;
 
-        public ChequeRequest(Long waiterId, List<String> menuName) {
-                this.waiterId = waiterId;
-                this.menuName = menuName;
+        public ChequeRequest(int priceAverage) {
+                this.priceAverage = priceAverage;
         }
 }
 

@@ -1,6 +1,7 @@
 package peaksoft.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,7 +40,5 @@ public class Restaurant {
         this.services = services;
     }
 
-    public void assign(User user) {
-        this.users.add(user);
-    }
+
 }

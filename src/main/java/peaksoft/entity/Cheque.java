@@ -29,9 +29,5 @@ public class Cheque {
     @ManyToMany(mappedBy = "cheques",cascade = {CascadeType.MERGE, CascadeType.REFRESH,CascadeType.DETACH})
     private List<MenuItem> menuItems;
 
-    public Cheque(Long id, int priceAverage, LocalDate createdAt) {
-        this.id = id;
-        this.priceAverage = priceAverage;
-        this.createdAt = createdAt;
-    }
+
 }

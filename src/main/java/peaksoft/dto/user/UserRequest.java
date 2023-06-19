@@ -2,6 +2,8 @@ package peaksoft.dto.user;
 
 
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import peaksoft.enums.Role;
 
 
@@ -9,6 +11,8 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Builder
+@Setter
+@Getter
 
 public class UserRequest {
     private String firstName;

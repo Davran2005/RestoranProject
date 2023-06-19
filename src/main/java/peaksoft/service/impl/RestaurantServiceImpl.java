@@ -2,14 +2,17 @@ package peaksoft.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import peaksoft.dto.SimpleResponse;
 import peaksoft.dto.restoran.RestaurantRequest;
 import peaksoft.dto.restoran.RestaurantResponse;
 import peaksoft.entity.Restaurant;
+import peaksoft.entity.User;
 import peaksoft.exception.BadRequestException;
 import peaksoft.exception.NotFoundException;
 import peaksoft.repository.RestaurantRepository;
+import peaksoft.repository.UserRepository;
 import peaksoft.service.RestaurantService;
 
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
+    private final UserRepository userRepository;
 
     @Override
     public SimpleResponse saveRestaurant(RestaurantRequest restaurantRequest) {
@@ -31,14 +35,11 @@ public class RestaurantServiceImpl implements RestaurantService {
                     restaurantRequest.getLocation().isBlank()) {
                 throw new BadRequestException("When saving the restaurant, one of the columns remained empty");
             } else {
-                Restaurant restaurant = new Restaurant(
-                        restaurantRequest.getName(),
-                        restaurantRequest.getLocation(),
-                        restaurantRequest.getRestaurantType(),
-                        0,
-                        restaurantRequest.getServices()
-                );
+                String email = SecurityContextHolder.getContext().getAuthentication().getName();
+                User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User with email: %s not found".formatted(email)));
+                Restaurant restaurant = new Restaurant(restaurantRequest.getName(), restaurantRequest.getLocation(), restaurantRequest.getRestaurantType(), restaurantRequest.getNumberOfEmployees(), restaurantRequest.getServices());
                 restaurantRepository.save(restaurant);
+                user.setRestaurant(restaurant);
                 return SimpleResponse.builder()
                         .status(HttpStatus.OK)
                         .message("Успешно")

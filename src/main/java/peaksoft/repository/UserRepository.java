@@ -6,12 +6,15 @@ import org.springframework.stereotype.Repository;
 import peaksoft.dto.user.UserResponse;
 import peaksoft.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String username);
 
     boolean existsByEmail(String email);
+    @Query("select u from User  u")
+    List<UserResponse> getAllUser();
 @Query("select u from User u where u.id = :id")
     Optional<UserResponse> findByIdUser(Long id);
 }

@@ -6,6 +6,6 @@ import peaksoft.dto.SimpleResponse;
 import peaksoft.entity.Cheque;
 
 public interface ChequeRepository extends JpaRepository<Cheque, Long> {
-    @Query("select concat(u.lastName + ' ' + u.) from User u")
-    SimpleResponse saveCheque(Cheque cheque);
+//    @Query("select concat(u.lastName + ' ' + u.) from User u")
+//    SimpleResponse saveCheque(Cheque cheque);
 }
